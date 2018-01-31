@@ -42,7 +42,7 @@ define( 'PLUGIN_NAME_VERSION', '1.0.0' );
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Add all CPT to register at time of plugin registration.
  */
-define( 'CPT_NAMES', array('subscription', 'payment') );
+define( 'CPT_NAMES', serialize(array('subscription', 'payment')) );
 
 /**
  * The code that runs during plugin activation.
