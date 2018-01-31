@@ -92,6 +92,7 @@ class As_Wp_Braintree_Payments {
 		$this->set_locale();
 		$this->define_admin_hooks();
 		$this->define_public_hooks();
+		$this->define_meta_box_hooks();
 
 	}
 
@@ -129,6 +130,11 @@ class As_Wp_Braintree_Payments {
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-as-wp-braintree-payments-admin.php';
+
+		/**
+		 * The class responsible for defining all actions related to meta box.
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-as-wp-braintree-payments-meta-box.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the public-facing
@@ -171,6 +177,23 @@ class As_Wp_Braintree_Payments {
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 		$this->loader->add_action( 'init', $plugin_admin, 'register_cpt' );
+
+	}
+
+	/**
+	 * Register all of the hooks related to meta box.
+	 * of the plugin.
+	 *
+	 * @since    1.0.0
+	 * @access   private
+	 */
+	private function define_meta_box_hooks() {
+
+		$plugin_meta_box = new As_Wp_Braintree_Payments_Meta_Box( $this->get_plugin_name(), $this->get_version(), $this->get_cpt_names() );
+
+		$this->loader->add_action('add_meta_boxes', $plugin_meta_box, 'add_meta_box');
+		$this->loader->add_action('save_post', $plugin_meta_box, 'save_meta_box');
+		$this->loader->add_action('the_content', $plugin_meta_box, 'display_meta_box_content');
 
 	}
 
