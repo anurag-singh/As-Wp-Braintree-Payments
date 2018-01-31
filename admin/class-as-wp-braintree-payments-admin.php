@@ -112,7 +112,7 @@ class As_Wp_Braintree_Payments_Admin {
 
 	}
 
-	
+
 	/**
 	 * Creates a new Custom Post Type.
 	 *
@@ -121,7 +121,9 @@ class As_Wp_Braintree_Payments_Admin {
 
 	public function register_cpt(){
 		$cpt_names = $this->cpt_names;
-		
+
+		$cpt_names = unserialize($cpt_names);
+
 		foreach ($cpt_names as $cpt_name) {
 			$single = ucwords(strtolower(preg_replace('/\s+/', ' ', $cpt_name) ));
 
@@ -153,7 +155,7 @@ class As_Wp_Braintree_Payments_Admin {
 			$opts['show_in_menu'] = TRUE;
 			$opts['show_in_nav_menu'] = TRUE;
 			$opts['show_ui'] = TRUE;
-			$opts['supports'] = array( 'title', 'editor' );
+			$opts['supports'] = array( 'title' );
 			$opts['taxonomies'] = array();
 			$opts['capabilities']['delete_others_posts'] = "delete_others_{$cap_type}s";
 			$opts['capabilities']['delete_post'] = "delete_{$cap_type}";
@@ -188,9 +190,9 @@ class As_Wp_Braintree_Payments_Admin {
 			$opts['rewrite']['pages'] = TRUE;
 			$opts['rewrite']['slug'] = __( strtolower( $plural ), $this->i18n );
 			$opts['rewrite']['with_front'] = FALSE;
-			
+
 			register_post_type( strtolower( $cpt_name ), $opts );
 		}
-	}	
+	}
 
 }
