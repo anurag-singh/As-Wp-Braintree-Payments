@@ -100,4 +100,40 @@ class As_Wp_Braintree_Payments_Public {
 
 	}
 
+	/**
+	 * Display shortcode to display all packages.
+	 *
+	 * @since    1.0.0
+	 */
+	public function render_packages() {
+		global $post;
+		$packageArgs = array(
+				'post_type' => 'subscription'
+		);
+
+		$packages = new WP_Query($packageArgs);
+
+		echo '<ul class="" id="subscription-packages">';
+		if($packages->have_posts()):
+			while($packages->have_posts()) :
+				$packages->the_post();
+
+					$plan_id = get_post_meta($post -> ID, '_meta_box_plan_id', true);
+					$plan_price = get_post_meta($post -> ID, '_meta_box_plan_price', true);
+					$plan_duration = get_post_meta($post -> ID, '_meta_box_plan_duration', true);
+					//$plan_description = get_post_meta($post -> ID, '_meta_box_plan_description', true);
+
+					echo '<li data-id="'. $plan_id. '" data-price="'. $plan_price .'" data-duration="'. $plan_duration .'">';
+						echo '<a href="'. get_the_permalink( ).'">';
+							echo the_title( );
+						echo '</a>';
+					echo '</li>';
+			endwhile;
+		else :
+
+		endif;
+		echo '</ul>';	
+
+		wp_reset_postdata();
+	}
 }
