@@ -75,6 +75,8 @@ class As_Wp_Braintree_Payments_Public {
 
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/as-wp-braintree-payments-public.css', array(), $this->version, 'all' );
 
+		wp_enqueue_style( $this->plugin_name.'-bootstrap', '//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css', array(), $this->version, 'all' );
+
 	}
 
 	/**
@@ -97,6 +99,7 @@ class As_Wp_Braintree_Payments_Public {
 		 */
 
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/as-wp-braintree-payments-public.js', array( 'jquery' ), $this->version, false );
+		wp_enqueue_script( $this->plugin_name.'-bootstrap', '//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.bundle.min.js', array( 'jquery' ), $this->version, true );
 
 	}
 
@@ -112,28 +115,72 @@ class As_Wp_Braintree_Payments_Public {
 		);
 
 		$packages = new WP_Query($packageArgs);
+		?>
 
-		echo '<ul class="" id="subscription-packages">';
-		if($packages->have_posts()):
-			while($packages->have_posts()) :
-				$packages->the_post();
+			<div id="packages-container">
+				<!-- Display list of all packages -->
+				<div class="row">
+					<div class="col">
+						<div class="collapse multi-collapse show" id="packagesListing" data-parent="#packages-container">
+							<div class="card card-body">
+								<?php
+									echo '<ul class="list-inline" id="subscription-packages">';
+										if($packages->have_posts()):
+											while($packages->have_posts()) :
+												$packages->the_post();
+													$plan_id = get_post_meta($post -> ID, '_meta_box_plan_id', true);
+													$plan_price = get_post_meta($post -> ID, '_meta_box_plan_price', true);
+													$plan_duration = get_post_meta($post -> ID, '_meta_box_plan_duration', true);
+													$plan_description = get_post_meta($post -> ID, '_meta_box_plan_description', true);
+													echo '<li data-id="'. $plan_id. '" data-price="'. $plan_price .'" data-duration="'. $plan_duration .'" class="list-inline-item text-center">';
+															echo '<ul class="list-group" id="package-details">';
+																	echo '<li class="list-group-item active">';
+																		echo the_title();
+																	echo '</li>';
+																	echo '<li class="list-group-item">';
+																		echo $plan_price;
+																	echo '</li>';
+																	echo '<li class="list-group-item">';
+																		echo $plan_duration;
+																	echo '</li>';
+																	echo '<li class="list-group-item">';
+																		echo $plan_description;
+																	echo '</li>';
+																	echo '<li class="list-group-item">';
+																		echo '<button class="btn btn-warning" type="button" data-toggle="collapse" data-target="#packageDetails" aria-expanded="false" aria-controls="packageDetails" onclick="myFunction('. $plan_id .')">Buy</button>';
+																	echo '</li>';
+															echo '</ul>';
+													echo '</li>';
+											endwhile;
+										else :
+										endif;
+										wp_reset_postdata();
+									echo '</ul>';
+								?>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- Display list of all packages -->
 
-					$plan_id = get_post_meta($post -> ID, '_meta_box_plan_id', true);
-					$plan_price = get_post_meta($post -> ID, '_meta_box_plan_price', true);
-					$plan_duration = get_post_meta($post -> ID, '_meta_box_plan_duration', true);
-					//$plan_description = get_post_meta($post -> ID, '_meta_box_plan_description', true);
+				<!-- Display details of selected packages -->
+				<div class="row">
+					<div class="col">
+						<div class="collapse multi-collapse" id="packageDetails" data-parent="#packages-container">
+							<div class="card card-body">
+								Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident.
+								<button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#packagesListing" aria-expanded="false" aria-controls="packagesListing">Toggle second element</button>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- Display details of selected packages -->
 
-					echo '<li data-id="'. $plan_id. '" data-price="'. $plan_price .'" data-duration="'. $plan_duration .'">';
-						echo '<a href="'. get_the_permalink( ).'">';
-							echo the_title( );
-						echo '</a>';
-					echo '</li>';
-			endwhile;
-		else :
+			</div>
 
-		endif;
-		echo '</ul>';	
 
-		wp_reset_postdata();
+		<?php
 	}
+
+
 }
