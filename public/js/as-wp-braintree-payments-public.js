@@ -30,3 +30,8 @@
 	 */
 
 })( jQuery );
+
+
+function myFunction(value) {
+	  	alert(value);
+}
