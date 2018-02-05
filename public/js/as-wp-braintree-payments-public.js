@@ -1,37 +1,24 @@
-(function( $ ) {
-	'use strict';
+jQuery(document).ready(function($){
+	$("#package-details li button").click(function(){
+		var packageId = $(this).attr('id');
+		// alert(packageId);
 
-	/**
-	 * All of the code for your public-facing JavaScript source
-	 * should reside in this file.
-	 *
-	 * Note: It has been assumed you will write jQuery code here, so the
-	 * $ function reference has been prepared for usage within the scope
-	 * of this function.
-	 *
-	 * This enables you to define handlers, for when the DOM is ready:
-	 *
-	 * $(function() {
-	 *
-	 * });
-	 *
-	 * When the window is loaded:
-	 *
-	 * $( window ).load(function() {
-	 *
-	 * });
-	 *
-	 * ...and/or other possibilities.
-	 *
-	 * Ideally, it is not considered best practise to attach more than a
-	 * single DOM-ready or window-load handler for a particular page.
-	 * Although scripts in the WordPress core, Plugins and Themes may be
-	 * practising this, we should strive to set a better example in our own work.
-	 */
-
-})( jQuery );
-
-
-function myFunction(value) {
-	  	alert(value);
-}
+		$.ajax({
+			url 		: 	ajax_object.ajax_url
+			,type 		: 	'POST'
+			,dataType  	:	'json'
+			,data 		:	{
+				action	: 	'render_package_details'
+				,id		: 	packageId
+			}
+			,beforeSend : 	function()	{
+				console.log("sending");
+			}
+			,success	:	function(response) {
+				console.log(response);
+				$('#packageDetails').html(response.html);
+			}
+		});
+	});
+});
+	

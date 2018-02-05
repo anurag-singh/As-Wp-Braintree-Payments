@@ -50,6 +50,7 @@ class As_Wp_Braintree_Payments_Loader {
 
 		$this->actions = array();
 		$this->filters = array();
+		$this->shortcodes = array();
 
 	}
 

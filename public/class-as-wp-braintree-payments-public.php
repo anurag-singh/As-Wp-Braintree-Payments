@@ -98,9 +98,16 @@ class As_Wp_Braintree_Payments_Public {
 		 * class.
 		 */
 
-		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/as-wp-braintree-payments-public.js', array( 'jquery' ), $this->version, false );
+		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/as-wp-braintree-payments-public.js', array( 'jquery' ), $this->version, true );
+		wp_localize_script( $this->plugin_name, 'ajax_object', 
+		array(
+			'ajax_url' => admin_url( 'admin-ajax.php' ))
+		);
 		wp_enqueue_script( $this->plugin_name.'-bootstrap', '//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.bundle.min.js', array( 'jquery' ), $this->version, true );
-
+		
+		if(is_page( 'Payment' )) {
+			wp_enqueue_script( $this->plugin_name.'-braintree', '//js.braintreegateway.com/js/braintree-2.32.1.min.js', array( 'jquery' ), $this->version, true );
+		}
 	}
 
 	/**
@@ -124,6 +131,17 @@ class As_Wp_Braintree_Payments_Public {
 						<div class="collapse multi-collapse show" id="packagesListing" data-parent="#packages-container">
 							<div class="card card-body">
 								<?php
+									// Panel Header
+									// $packageDetailsHtml = '<div class="row">';
+									// $packageDetailsHtml .= '<div class="col">';
+									// $packageDetailsHtml .= '<button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#packagesListing" aria-expanded="false" aria-controls="packagesListing">Back</button>';
+									// $packageDetailsHtml .= '</div>';
+									// $packageDetailsHtml .= '<div class="col">';
+									// $packageDetailsHtml .= '</div>';
+									// $packageDetailsHtml .= '</div>';
+									// // Panel Header
+
+									// echo $packageDetailsHtml;
 									echo '<ul class="list-inline" id="subscription-packages">';
 										if($packages->have_posts()):
 											while($packages->have_posts()) :
@@ -132,6 +150,8 @@ class As_Wp_Braintree_Payments_Public {
 													$plan_price = get_post_meta($post -> ID, '_meta_box_plan_price', true);
 													$plan_duration = get_post_meta($post -> ID, '_meta_box_plan_duration', true);
 													$plan_description = get_post_meta($post -> ID, '_meta_box_plan_description', true);
+
+													
 													echo '<li data-id="'. $plan_id. '" data-price="'. $plan_price .'" data-duration="'. $plan_duration .'" class="list-inline-item text-center">';
 															echo '<ul class="list-group" id="package-details">';
 																	echo '<li class="list-group-item active">';
@@ -147,7 +167,7 @@ class As_Wp_Braintree_Payments_Public {
 																		echo $plan_description;
 																	echo '</li>';
 																	echo '<li class="list-group-item">';
-																		echo '<button class="btn btn-warning" type="button" data-toggle="collapse" data-target="#packageDetails" aria-expanded="false" aria-controls="packageDetails" onclick="myFunction('. $plan_id .')">Buy</button>';
+																		echo '<button class="btn btn-warning" id="'. get_the_ID() .'" type="button" data-toggle="collapse" data-target="#packageDetails" aria-expanded="false" aria-controls="packageDetails">Buy</button>';
 																	echo '</li>';
 															echo '</ul>';
 													echo '</li>';
@@ -167,9 +187,9 @@ class As_Wp_Braintree_Payments_Public {
 				<div class="row">
 					<div class="col">
 						<div class="collapse multi-collapse" id="packageDetails" data-parent="#packages-container">
-							<div class="card card-body">
-								Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident.
-								<button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#packagesListing" aria-expanded="false" aria-controls="packagesListing">Toggle second element</button>
+							<div class="card card-body" id="packageDetails">
+								Package Details
+								<button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#packagesListing" aria-expanded="false" aria-controls="packagesListing">Back</button>
 							</div>
 						</div>
 					</div>
@@ -180,6 +200,133 @@ class As_Wp_Braintree_Payments_Public {
 
 
 		<?php
+	}
+
+	public function render_package_details() {
+		if(!isset($_POST['id']))  {	
+			$response = array (
+							'status' 	=> 	0
+							,'msg'		=>	'unable to get package id'
+						);
+			
+		} else {
+			$postId = $_POST['id'];
+
+			$as = include('vendor/autoloader.php');
+			
+			$plan_id = get_post_meta($postId, '_meta_box_plan_id', true);
+			$plan_price = get_post_meta($postId, '_meta_box_plan_price', true);
+			$plan_duration = get_post_meta($postId, '_meta_box_plan_duration', true);
+			$plan_description = get_post_meta($postId, '_meta_box_plan_description', true);
+
+			$packakeObj = array (				
+				'id' 		=> $plan_id
+				,'name'		=> get_the_title( $postId )
+				,'price'	=> $plan_price
+				,'duration'	=> $plan_duration
+			);
+
+			// Panel Header
+			$packageDetailsHtml = '<div class="row">';
+			$packageDetailsHtml .= '<div class="col">';
+			$packageDetailsHtml .= '<button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#packagesListing" aria-expanded="false" aria-controls="packagesListing">Back</button>';
+			$packageDetailsHtml .= '</div>';
+			$packageDetailsHtml .= '<div class="col">';
+			$packageDetailsHtml .= '</div>';
+			$packageDetailsHtml .= '</div>';
+			// Panel Header
+
+			$packageDetailsHtml .= '<ul class="list-group text-center">';
+			$packageDetailsHtml .= '<li class="list-group-item active">';
+			$packageDetailsHtml .= 'Package Details';
+			$packageDetailsHtml .= '</li>';
+			$packageDetailsHtml .= '<li class="list-group-item">';
+			$packageDetailsHtml .= get_the_title( $postId );
+			$packageDetailsHtml .= '</li>';
+			$packageDetailsHtml .= '<li class="list-group-item">';
+			$packageDetailsHtml .= $plan_duration;
+			$packageDetailsHtml .= '</li>';
+			$packageDetailsHtml .= '<li class="list-group-item">';
+			$packageDetailsHtml .= $plan_price;
+			$packageDetailsHtml .= '</li>';
+			$packageDetailsHtml .= '<li class="list-group-item">';
+			$packageDetailsHtml .= $plan_description;
+			$packageDetailsHtml .= '</li>';
+			$packageDetailsHtml .= '</ul>';
+
+
+			$userObj = wp_get_current_user();
+			if($userObj->ID) {	// If Logged in, Fetch user's basic details
+				$userFName = $userObj->user_firstname;
+				$userLName = $userObj->user_lastname;
+				$userEmail = $userObj->user_email;		
+				
+				$inputMode = 'disabled';
+			} else {			// If not logged, set user basic details as blank
+				$userFName = $userLName = $userEmail = '';
+			}
+
+			$paymentForm = '<div class="row mt-5">';
+			$paymentForm .= '<div class="col">';
+
+			$paymentForm .= '<div class="card text-center">';
+			$paymentForm .= '<div class="card-header">';
+			$paymentForm .= 'User Detatils';
+			$paymentForm .= '</div>';
+			$paymentForm .= '<div class="card-body">';
+
+			// $paymentForm .= '<form id="payment-form" action="'.get_site_url().'/payment/" method="POST" class="payment">';
+			$paymentForm .= '<div>';
+
+			$paymentForm .= '<div class="row">';
+			$paymentForm .= '<div class="col">';
+			$paymentForm .= '<input type="text" class="form-control" id="payer_fname" name="payer_fname" placeholder="Enter First Name" value="'.$userFName.'" '.$inputMode.'>';
+			$paymentForm .= '</div>';
+
+			$paymentForm .= '<div class="col">';
+			$paymentForm .= '<input type="text" class="form-control" id="payer_lname" name="payer_lname" placeholder="Enter Last Name" value="'.$userLName.'" '.$inputMode.'>';
+			$paymentForm .= '</div>';
+			$paymentForm .= '</div>';
+
+			$paymentForm .= '<div class="row">';
+			$paymentForm .= '<div class="col-9">';
+			$paymentForm .= '<input type="email" class="form-control" id="payer_email" name="payer_email" placeholder="Enter email" value="'.$userEmail.'" '.$inputMode.'>';
+			$paymentForm .= '</div>';
+
+			$paymentForm .= '<div class="col-3">';
+			$paymentForm .= '<div class="input-group">';
+			$paymentForm .= '<div class="input-group-prepend">';
+			$paymentForm .= '<span class="input-group-text" id="inputGroupPrepend">$</span>';
+			$paymentForm .= '</div>';
+			$paymentForm .= '<input type="text" class="form-control" id="payer_amount" name="payer_amount" placeholder="10.00" value="'.$plan_price.'" '.$inputMode.'>';
+			$paymentForm .= '</div>';
+			$paymentForm .= '</div>';
+			$paymentForm .= '</div>';
+
+			$paymentForm .= '<button type="button" id="submit_payment" class="btn btn-primary">Submit</button>';
+
+			$paymentForm .= '</div>';
+			$paymentForm .= '</div>';
+			$paymentForm .= '</div>';
+
+			$paymentForm .= '</div>';
+			$paymentForm .= '</div>';
+						
+
+	
+
+			$html = $packageDetailsHtml . $paymentForm;
+
+			$response = array (
+				'status' 	=> 	1
+				,'msg'		=>	'Its works'
+				,'html'	=> $html
+			);
+		}
+
+		echo json_encode( $response );
+
+		exit();
 	}
 
 

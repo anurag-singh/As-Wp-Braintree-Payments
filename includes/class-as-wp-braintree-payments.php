@@ -144,6 +144,14 @@ class As_Wp_Braintree_Payments {
 
 		$this->loader = new As_Wp_Braintree_Payments_Loader();
 
+		/**
+		 * The class responsible for defining all actions that occur in the public-facing
+		 * side of the site.
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-as-wp-braintree-payments-sdk.php';
+
+		// $this->sdk = new As_Wp_Braintree_Payments_Sdk();
+
 	}
 
 	/**
@@ -211,6 +219,8 @@ class As_Wp_Braintree_Payments {
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
 		$this->loader->add_shortcode( 'packages', $plugin_public, 'render_packages' );
+		$this->loader->add_action( 'wp_ajax_nopriv_render_package_details', $plugin_public, 'render_package_details' );
+		$this->loader->add_action( 'wp_ajax_render_package_details', $plugin_public, 'render_package_details' );
 
 	}
 
