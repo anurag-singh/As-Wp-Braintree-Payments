@@ -15,7 +15,7 @@
  * @wordpress-plugin
  * Plugin Name:       As Wp Braintree Payments
  * Plugin URI:        http://anuragsingh.me
- * Description:       Add Braintree payments in wordpress site.
+ * Description:       Add Braintree payments in wordpress site. Page and shortcode to display content (Page Name : packages | Shortcode : packages) (Page Name : payment | Shortcode : payment) (Page Name : success | Shortcode : success)
  * Version:           1.0.0
  * Author:            Anurag Singh
  * Author URI:        http://anuragsingh.me
