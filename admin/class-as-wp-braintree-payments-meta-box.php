@@ -233,5 +233,160 @@ class As_Wp_Braintree_Payments_Meta_Box {
 		return $content;
 	}
 
+	/**
+	 * Adds the meta box container to display transaction details.
+	 */
+	public function add_transaction_details_meta_box_for_cpt_payment($post_type) {
+		$post_types = array('payment');
+
+
+		//limit meta box to certain post types
+		if (in_array($post_type, $post_types)) {
+			add_meta_box('transaction-details-meta',
+			'TRANSACTION DETAILS',
+			array($this, 'transaction_meta_box_function'),
+			$post_type,
+			'normal',
+			'high');
+		}
+	}
+
+	/**
+	 * Render Meta Box content for transaction details.
+	 *
+	 * @param WP_Post $post The post object.
+	 */
+
+	public function transaction_meta_box_function($post) {
+		global $post;
+
+		$transaction_id = get_post_meta( $post->ID, $meta_key='_transaction_id', true);
+		$transaction_type = get_post_meta( $post->ID, $meta_key='_transaction_type', true);
+		$transaction_amount = get_post_meta( $post->ID, $meta_key='_transaction_amount', true);
+		$transaction_currency_iso_code = get_post_meta( $post->ID, $meta_key='_transaction_currency_iso_code', true);
+		$transaction_status = get_post_meta( $post->ID, $meta_key='_transaction_status', true);
+
+		$transaction_created_at = get_post_meta( $post->ID, $meta_key='_transaction_created_at', true);
+		$transaction_updated_at = get_post_meta( $post->ID, $meta_key='_transaction_updated_at', true);
+		?>
+
+		<table class="form-table"><tbody>
+			<tr>
+				<th scope="row"><p>ID</p></th>
+				<td><p><?php echo $transaction_id; ?></p></td>
+			</tr>
+
+			<tr>
+				<th scope="row"><p>Amount</p></th>
+				<td><p><?php echo $transaction_amount . ' ' . $transaction_currency_iso_code; ?></p></td>
+			</tr>
+
+			<tr>
+				<th scope="row"><p>Type</p></th>
+				<td><p><?php echo $transaction_type; ?></p></td>
+			</tr>
+
+			<tr>
+				<th scope="row"><p>Status</p></th>
+				<td><p><?php echo $transaction_status; ?></p></td>
+			</tr>
+
+			<tr>
+				<th scope="row"><p>Created At / Timezone</p></th>
+				<td><p><?php echo $transaction_created_at->date; ?> / <?php  echo $transaction_created_at->timezone; ?></p></td>
+			</tr>
+
+			<tr>
+				<th scope="row"><p>Updated At / Timezone</p></th>
+				<td><p><?php echo $transaction_updated_at->date; ?> / <?php  echo $transaction_updated_at->timezone; ?></p></td>
+			</tr>
+
+			<tr>
+				<th scope="row"><p>View on Braintree</p></th>
+				<td><a target="_blank" href="https://sandbox.braintreegateway.com/merchants/bt8m5c9jry7ffzpw/transactions/<?php echo $transaction_id; ?> ">View</a></td>
+			</tr>
+
+
+		</tbody></table>
+		<?php
+	}
+
+	/**
+	 * Adds the meta box container to display payment details.
+	 */
+	public function add_payment_details_meta_box_for_cpt_payment($post_type) {
+		$post_types = array('payment');
+
+
+		//limit meta box to certain post types
+		if (in_array($post_type, $post_types)) {
+			add_meta_box('payment-details-meta',
+			'PAYMENT DETAILS',
+			array($this, 'payment_meta_box_function'),
+			$post_type,
+			'normal',
+			'high');
+		}
+	}
+
+	/**
+	 * Render Meta Box content for payment details.
+	 *
+	 * @param WP_Post $post The post object.
+	 */
+
+	public function payment_meta_box_function($post) {
+		global $post;
+
+		$cardDetails_token = get_post_meta( $post->ID, $meta_key='_cardDetails_token', true);
+		$cardDetails_bin = get_post_meta( $post->ID, $meta_key='_cardDetails_bin', true);
+		$cardDetails_last4 = get_post_meta( $post->ID, $meta_key='_cardDetails_last4', true);
+		$cardDetails_cardType = get_post_meta( $post->ID, $meta_key='_cardDetails_cardType', true);
+		// $cardDetails_expirationDate = get_post_meta( $post->ID, $meta_key='_cardDetails_expirationDate', true);
+		$cardDetails_cardholderName = get_post_meta( $post->ID, $meta_key='_cardDetails_cardholderName', true);
+		$cardDetails_customerLocation = get_post_meta( $post->ID, $meta_key='_cardDetails_customerLocation', true);
+
+		the_meta();
+		?>
+
+
+		<table class="form-table"><tbody>
+			<tr>
+				<th scope="row"><p>Token</p></th>
+				<td><p><?php echo $cardDetails_token; ?></p></td>
+			</tr>
+
+			<tr>
+				<th scope="row"><p>Bin</p></th>
+				<td><p><?php echo $cardDetails_bin; ?></p></td>
+			</tr>
+
+			<tr>
+				<th scope="row"><p>Last 4 Digit</p></th>
+				<td><p><?php echo $cardDetails_last4; ?></p></td>
+			</tr>
+
+			<tr>
+				<th scope="row"><p>Card Type</p></th>
+				<td><p><?php echo $cardDetails_cardType; ?></p></td>
+			</tr>
+
+			<tr>
+				<th scope="row"><p>Cardholder Name</p></th>
+				<td><p><?php echo $cardDetails_cardholderName; ?></p></td>
+			</tr>
+
+			<tr>
+				<th scope="row"><p>Customer Location</p></th>
+				<td><p><?php echo $cardDetails_customerLocation; ?></p></td>
+			</tr>
+
+
+
+
+		</tbody></table>
+		<?php
+	}
+
 }
 ?>
