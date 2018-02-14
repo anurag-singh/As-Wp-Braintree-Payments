@@ -98,16 +98,13 @@ class As_Wp_Braintree_Payments_Public {
 		 * class.
 		 */
 
-		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/as-wp-braintree-payments-public.js', array( 'jquery' ), $this->version, true );
-		wp_localize_script( $this->plugin_name, 'ajax_object', 
-		array(
-			'ajax_url' => admin_url( 'admin-ajax.php' ))
-		);
+		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/as-wp-braintree-payments-public.js', array( 'jquery' ), $this->version, false );
+
+
 		wp_enqueue_script( $this->plugin_name.'-bootstrap', '//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.bundle.min.js', array( 'jquery' ), $this->version, true );
-		
-		if(is_page( 'Payment' )) {
-			wp_enqueue_script( $this->plugin_name.'-braintree', '//js.braintreegateway.com/js/braintree-2.32.1.min.js', array( 'jquery' ), $this->version, true );
-		}
+
+		wp_enqueue_script( $this->plugin_name.'-dropin', '//js.braintreegateway.com/web/dropin/1.9.4/js/dropin.min.js', array( 'jquery' ), $this->version, false );
+
 	}
 
 	/**
@@ -124,209 +121,401 @@ class As_Wp_Braintree_Payments_Public {
 		$packages = new WP_Query($packageArgs);
 		?>
 
-			<div id="packages-container">
-				<!-- Display list of all packages -->
-				<div class="row">
-					<div class="col">
-						<div class="collapse multi-collapse show" id="packagesListing" data-parent="#packages-container">
-							<div class="card card-body">
-								<?php
-									// Panel Header
-									// $packageDetailsHtml = '<div class="row">';
-									// $packageDetailsHtml .= '<div class="col">';
-									// $packageDetailsHtml .= '<button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#packagesListing" aria-expanded="false" aria-controls="packagesListing">Back</button>';
-									// $packageDetailsHtml .= '</div>';
-									// $packageDetailsHtml .= '<div class="col">';
-									// $packageDetailsHtml .= '</div>';
-									// $packageDetailsHtml .= '</div>';
-									// // Panel Header
+		<div id="packages-container">
+			<!-- Display list of all packages -->
+			<div class="row">
+				<div class="col">
 
-									// echo $packageDetailsHtml;
-									echo '<ul class="list-inline" id="subscription-packages">';
-										if($packages->have_posts()):
-											while($packages->have_posts()) :
-												$packages->the_post();
-													$plan_id = get_post_meta($post -> ID, '_meta_box_plan_id', true);
-													$plan_price = get_post_meta($post -> ID, '_meta_box_plan_price', true);
-													$plan_duration = get_post_meta($post -> ID, '_meta_box_plan_duration', true);
-													$plan_description = get_post_meta($post -> ID, '_meta_box_plan_description', true);
+					<div class="card card-body">
+						<?php
+							echo '<ul class="list-inline" id="subscription-packages">';
+								if($packages->have_posts()):
+									while($packages->have_posts()) :
+										$packages->the_post();
+											$plan_id = get_post_meta($post -> ID, '_meta_box_plan_id', true);
+											$plan_price = get_post_meta($post -> ID, '_meta_box_plan_price', true);
+											$plan_duration = get_post_meta($post -> ID, '_meta_box_plan_duration', true);
+											$plan_description = get_post_meta($post -> ID, '_meta_box_plan_description', true);
+											// Add var in url
+											$paymentPageUrl = add_query_arg('packagePostId', $post->ID, get_permalink( get_page_by_path( 'Payment' ) ));
 
-													
-													echo '<li data-id="'. $plan_id. '" data-price="'. $plan_price .'" data-duration="'. $plan_duration .'" class="list-inline-item text-center">';
-															echo '<ul class="list-group" id="package-details">';
-																	echo '<li class="list-group-item active">';
-																		echo the_title();
-																	echo '</li>';
-																	echo '<li class="list-group-item">';
-																		echo $plan_price;
-																	echo '</li>';
-																	echo '<li class="list-group-item">';
-																		echo $plan_duration;
-																	echo '</li>';
-																	echo '<li class="list-group-item">';
-																		echo $plan_description;
-																	echo '</li>';
-																	echo '<li class="list-group-item">';
-																		echo '<button class="btn btn-warning" id="'. get_the_ID() .'" type="button" data-toggle="collapse" data-target="#packageDetails" aria-expanded="false" aria-controls="packageDetails">Buy</button>';
-																	echo '</li>';
-															echo '</ul>';
-													echo '</li>';
-											endwhile;
-										else :
-										endif;
-										wp_reset_postdata();
-									echo '</ul>';
-								?>
-							</div>
-						</div>
+											echo '<li data-id="'. $plan_id. '" data-price="'. $plan_price .'" data-duration="'. $plan_duration .'" class="list-inline-item text-center">';
+													echo '<ul class="list-group" id="package-details">';
+															echo '<li class="list-group-item active">';
+																echo the_title();
+															echo '</li>';
+															echo '<li class="list-group-item">';
+																echo $plan_price;
+															echo '</li>';
+															echo '<li class="list-group-item">';
+																echo $plan_duration;
+															echo '</li>';
+															echo '<li class="list-group-item">';
+																echo $plan_description;
+															echo '</li>';
+															echo '<li class="list-group-item">';
+																echo '<a class="btn btn-warning" href="' .$paymentPageUrl. '">Buy</a>';
+															echo '</li>';
+													echo '</ul>';
+											echo '</li>';
+									endwhile;
+								else :
+								endif;
+								wp_reset_postdata();
+							echo '</ul>';
+						?>
 					</div>
-				</div>
-				<!-- Display list of all packages -->
 
-				<!-- Display details of selected packages -->
-				<div class="row">
-					<div class="col">
-						<div class="collapse multi-collapse" id="packageDetails" data-parent="#packages-container">
-							<div class="card card-body" id="packageDetails">
-								Package Details
-								<button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#packagesListing" aria-expanded="false" aria-controls="packagesListing">Back</button>
-							</div>
-						</div>
-					</div>
 				</div>
-				<!-- Display details of selected packages -->
-
 			</div>
-
-
+				<!-- Display list of all packages -->
+		</div>
 		<?php
 	}
 
-	public function render_package_details() {
-		if(!isset($_POST['id']))  {	
-			$response = array (
-							'status' 	=> 	0
-							,'msg'		=>	'unable to get package id'
-						);
-			
-		} else {
-			$postId = $_POST['id'];
-
-			$as = include('vendor/autoloader.php');
-			
-			$plan_id = get_post_meta($postId, '_meta_box_plan_id', true);
-			$plan_price = get_post_meta($postId, '_meta_box_plan_price', true);
-			$plan_duration = get_post_meta($postId, '_meta_box_plan_duration', true);
-			$plan_description = get_post_meta($postId, '_meta_box_plan_description', true);
-
-			$packakeObj = array (				
-				'id' 		=> $plan_id
-				,'name'		=> get_the_title( $postId )
-				,'price'	=> $plan_price
-				,'duration'	=> $plan_duration
-			);
-
-			// Panel Header
-			$packageDetailsHtml = '<div class="row">';
-			$packageDetailsHtml .= '<div class="col">';
-			$packageDetailsHtml .= '<button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#packagesListing" aria-expanded="false" aria-controls="packagesListing">Back</button>';
-			$packageDetailsHtml .= '</div>';
-			$packageDetailsHtml .= '<div class="col">';
-			$packageDetailsHtml .= '</div>';
-			$packageDetailsHtml .= '</div>';
-			// Panel Header
-
-			$packageDetailsHtml .= '<ul class="list-group text-center">';
-			$packageDetailsHtml .= '<li class="list-group-item active">';
-			$packageDetailsHtml .= 'Package Details';
-			$packageDetailsHtml .= '</li>';
-			$packageDetailsHtml .= '<li class="list-group-item">';
-			$packageDetailsHtml .= get_the_title( $postId );
-			$packageDetailsHtml .= '</li>';
-			$packageDetailsHtml .= '<li class="list-group-item">';
-			$packageDetailsHtml .= $plan_duration;
-			$packageDetailsHtml .= '</li>';
-			$packageDetailsHtml .= '<li class="list-group-item">';
-			$packageDetailsHtml .= $plan_price;
-			$packageDetailsHtml .= '</li>';
-			$packageDetailsHtml .= '<li class="list-group-item">';
-			$packageDetailsHtml .= $plan_description;
-			$packageDetailsHtml .= '</li>';
-			$packageDetailsHtml .= '</ul>';
+	public function config_braintree() {
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'braintree/vendor/autoload.php';
+		Braintree_Configuration::environment('sandbox');
+		Braintree_Configuration::merchantId('bt8m5c9jry7ffzpw');
+		Braintree_Configuration::publicKey('2qwtjnn5vfpnsvjc');
+		Braintree_Configuration::privateKey('49cdea202b61604c4a341dc9d07d717b');
+	}
 
 
-			$userObj = wp_get_current_user();
-			if($userObj->ID) {	// If Logged in, Fetch user's basic details
-				$userFName = $userObj->user_firstname;
-				$userLName = $userObj->user_lastname;
-				$userEmail = $userObj->user_email;		
-				
-				$inputMode = 'disabled';
-			} else {			// If not logged, set user basic details as blank
-				$userFName = $userLName = $userEmail = '';
-			}
 
-			$paymentForm = '<div class="row mt-5">';
-			$paymentForm .= '<div class="col">';
+	public function render_payment_form() {
+		if(!isset($_GET['packagePostId'])) {
+			echo "Unable to fetch package details.";
+			return;
+		}
+		global $post;
+		$post_id = $_GET['packagePostId'];
+		$plan_id = get_post_meta($post_id, '_meta_box_plan_id', true);
+		$plan_price = get_post_meta($post_id, '_meta_box_plan_price', true);
 
-			$paymentForm .= '<div class="card text-center">';
-			$paymentForm .= '<div class="card-header">';
-			$paymentForm .= 'User Detatils';
-			$paymentForm .= '</div>';
-			$paymentForm .= '<div class="card-body">';
-
-			// $paymentForm .= '<form id="payment-form" action="'.get_site_url().'/payment/" method="POST" class="payment">';
-			$paymentForm .= '<div>';
-
-			$paymentForm .= '<div class="row">';
-			$paymentForm .= '<div class="col">';
-			$paymentForm .= '<input type="text" class="form-control" id="payer_fname" name="payer_fname" placeholder="Enter First Name" value="'.$userFName.'" '.$inputMode.'>';
-			$paymentForm .= '</div>';
-
-			$paymentForm .= '<div class="col">';
-			$paymentForm .= '<input type="text" class="form-control" id="payer_lname" name="payer_lname" placeholder="Enter Last Name" value="'.$userLName.'" '.$inputMode.'>';
-			$paymentForm .= '</div>';
-			$paymentForm .= '</div>';
-
-			$paymentForm .= '<div class="row">';
-			$paymentForm .= '<div class="col-9">';
-			$paymentForm .= '<input type="email" class="form-control" id="payer_email" name="payer_email" placeholder="Enter email" value="'.$userEmail.'" '.$inputMode.'>';
-			$paymentForm .= '</div>';
-
-			$paymentForm .= '<div class="col-3">';
-			$paymentForm .= '<div class="input-group">';
-			$paymentForm .= '<div class="input-group-prepend">';
-			$paymentForm .= '<span class="input-group-text" id="inputGroupPrepend">$</span>';
-			$paymentForm .= '</div>';
-			$paymentForm .= '<input type="text" class="form-control" id="payer_amount" name="payer_amount" placeholder="10.00" value="'.$plan_price.'" '.$inputMode.'>';
-			$paymentForm .= '</div>';
-			$paymentForm .= '</div>';
-			$paymentForm .= '</div>';
-
-			$paymentForm .= '<button type="button" id="submit_payment" class="btn btn-primary">Submit</button>';
-
-			$paymentForm .= '</div>';
-			$paymentForm .= '</div>';
-			$paymentForm .= '</div>';
-
-			$paymentForm .= '</div>';
-			$paymentForm .= '</div>';
-						
-
-	
-
-			$html = $packageDetailsHtml . $paymentForm;
-
-			$response = array (
-				'status' 	=> 	1
-				,'msg'		=>	'Its works'
-				,'html'	=> $html
-			);
+		if(empty($plan_price)) {
+			echo "Price not set.";
+			return;
 		}
 
-		echo json_encode( $response );
+		$this->config_braintree();
+		$clientToken = Braintree_ClientToken::generate();
+		?>
+			<div class="wrapper">
+		        <div class="checkout container">
 
-		exit();
+		            <header>
+		                <h1>Hi, <br>Let's test a transaction</h1>
+		                <p>
+		                    Make a test payment with Braintree using PayPal or a card
+		                </p>
+		            </header>
+
+		            <form method="post" id="payment-form" action="/success">
+		                <section>
+		                    <label for="amount">
+		                        <span class="input-label">Amount</span>
+		                        <div class="input-wrapper amount-wrapper">
+		                            <input id="amount" name="amount" type="text" min="1" placeholder="Amount" value="<?php echo $plan_price; ?>">
+		                        </div>
+		                    </label>
+
+		                    <div class="bt-drop-in-wrapper">
+		                        <div id="bt-dropin"></div>
+		                    </div>
+		                </section>
+
+		                <input id="nonce" name="payment_method_nonce" type="hidden" />
+		                <button class="button" type="submit"><span>Test Transaction</span></button>
+		            </form>
+		        </div>
+		    </div>
+		<script>
+	        var form = document.querySelector('#payment-form');
+	        var client_token = "<?php echo $clientToken; ?>";
+	        // console.log(client_token);
+	        braintree.dropin.create({
+	          authorization: client_token,
+	          selector: '#bt-dropin',
+	          paypal: {
+	            flow: 'vault'
+	          }
+	        }, function (createErr, instance) {
+	          if (createErr) {
+	            console.log('Create Error', createErr);
+	            return;
+	          }
+	          form.addEventListener('submit', function (event) {
+	            event.preventDefault();
+	            instance.requestPaymentMethod(function (err, payload) {
+	              if (err) {
+	                console.log('Request Payment Method Error', err);
+	                return;
+	              }
+	              // Add the nonce to the form and submit
+	              document.querySelector('#nonce').value = payload.nonce;
+	              form.submit();
+	            });
+	          });
+	        });
+	    </script>
+		<?php
+	}
+
+	public function payment_success() {
+		$this->config_braintree();
+
+		$amount = $_POST["amount"];
+		$nonce = $_POST["payment_method_nonce"];
+		$result = Braintree\Transaction::sale([
+		    'amount' => $amount,
+		    'paymentMethodNonce' => $nonce,
+		    'options' => [
+		        'submitForSettlement' => true
+		    ]
+		]);
+
+		if ($result->success || !is_null($result->transaction)) {
+		    $transaction = $result->transaction;
+		    //header("Location: transaction.php?id=" . $transaction->id);
+
+		    if (isset($transaction->id)) {
+		        $transaction = Braintree\Transaction::find($transaction->id);
+		        $transactionSuccessStatuses = array(
+		            Braintree\Transaction::AUTHORIZED,
+		            Braintree\Transaction::AUTHORIZING,
+		            Braintree\Transaction::SETTLED,
+		            Braintree\Transaction::SETTLING,
+		            Braintree\Transaction::SETTLEMENT_CONFIRMED,
+		            Braintree\Transaction::SETTLEMENT_PENDING,
+		            Braintree\Transaction::SUBMITTED_FOR_SETTLEMENT
+		        );
+		        if (in_array($transaction->status, $transactionSuccessStatuses)) {
+		            $header = "Sweet Success!";
+		            $icon = "success";
+		            $message = "Your test transaction has been successfully processed. See the Braintree API response and try again.";
+
+		            $this->insert_transaction_in_db($transaction);
+		        } else {
+		            $header = "Transaction Failed";
+		            $icon = "fail";
+		            $message = "Your test transaction has a status of " . $transaction->status . ". See the Braintree API response and try again.";
+		        }
+		        ?>
+		        <!-- Display HTML on Success -->
+		        	<div class="wrapper">
+					    <div class="response container">
+					        <div class="content">
+					            <div class="icon">
+					            <img src="/images/<?php echo($icon)?>.svg" alt="">
+					            </div>
+
+					            <h1><?php echo($header)?></h1>
+					            <section>
+					                <p><?php echo($message)?></p>
+					            </section>
+					            <section>
+					                <a class="button primary back" href="/index.php">
+					                    <span>Test Another Transaction</span>
+					                </a>
+					            </section>
+					        </div>
+					    </div>
+					</div>
+
+					<aside class="drawer dark">
+					    <header>
+					        <div class="content compact">
+					            <a href="https://developers.braintreepayments.com" class="braintree" target="_blank">Braintree</a>
+					            <h3>API Response</h3>
+					        </div>
+					    </header>
+
+					    <article class="content compact">
+					        <section>
+					            <h5>Transaction</h5>
+					            <table cellpadding="0" cellspacing="0">
+					                <tbody>
+					                    <tr>
+					                        <td>id</td>
+					                        <td><?php echo($transaction->id)?></td>
+					                    </tr>
+					                    <tr>
+					                        <td>type</td>
+					                        <td><?php echo($transaction->type)?></td>
+					                    </tr>
+					                    <tr>
+					                        <td>amount</td>
+					                        <td><?php echo($transaction->amount)?></td>
+					                    </tr>
+					                    <tr>
+					                        <td>status</td>
+					                        <td><?php echo($transaction->status)?></td>
+					                    </tr>
+					                    <tr>
+					                        <td>created_at</td>
+					                        <td><?php echo($transaction->createdAt->format('Y-m-d H:i:s'))?></td>
+					                    </tr>
+					                    <tr>
+					                        <td>updated_at</td>
+					                        <td><?php echo($transaction->updatedAt->format('Y-m-d H:i:s'))?></td>
+					                    </tr>
+					                </tbody>
+					            </table>
+					        </section>
+
+					        <section>
+					            <h5>Payment</h5>
+
+					            <table cellpadding="0" cellspacing="0">
+					                <tbody>
+					                    <tr>
+					                        <td>token</td>
+					                        <td><?php echo($transaction->creditCardDetails->token)?></td>
+					                    </tr>
+					                    <tr>
+					                        <td>bin</td>
+					                        <td><?php echo($transaction->creditCardDetails->bin)?></td>
+					                    </tr>
+					                    <tr>
+					                        <td>last_4</td>
+					                        <td><?php echo($transaction->creditCardDetails->last4)?></td>
+					                    </tr>
+					                    <tr>
+					                        <td>card_type</td>
+					                        <td><?php echo($transaction->creditCardDetails->cardType)?></td>
+					                    </tr>
+					                    <tr>
+					                        <td>expiration_date</td>
+					                        <td><?php echo($transaction->creditCardDetails->expirationDate)?></td>
+					                    </tr>
+					                    <tr>
+					                        <td>cardholder_name</td>
+					                        <td><?php echo($transaction->creditCardDetails->cardholderName)?></td>
+					                    </tr>
+					                    <tr>
+					                        <td>customer_location</td>
+					                        <td><?php echo($transaction->creditCardDetails->customerLocation)?></td>
+					                    </tr>
+					                </tbody>
+					            </table>
+					        </section>
+
+					        <?php if (!is_null($transaction->customerDetails->id)) : ?>
+					        <section>
+					            <h5>Customer Details</h5>
+					            <table cellpadding="0" cellspacing="0">
+					                <tbody>
+					                    <tr>
+					                        <td>id</td>
+					                        <td><?php echo($transaction->customerDetails->id)?></td>
+					                    </tr>
+					                    <tr>
+					                        <td>first_name</td>
+					                        <td><?php echo($transaction->customerDetails->firstName)?></td>
+					                    </tr>
+					                    <tr>
+					                        <td>last_name</td>
+					                        <td><?php echo($transaction->customerDetails->lastName)?></td>
+					                    </tr>
+					                    <tr>
+					                        <td>email</td>
+					                        <td><?php echo($transaction->customerDetails->email)?></td>
+					                    </tr>
+					                    <tr>
+					                        <td>company</td>
+					                        <td><?php echo($transaction->customerDetails->company)?></td>
+					                    </tr>
+					                    <tr>
+					                        <td>website</td>
+					                        <td><?php echo($transaction->customerDetails->website)?></td>
+					                    </tr>
+					                    <tr>
+					                        <td>phone</td>
+					                        <td><?php echo($transaction->customerDetails->phone)?></td>
+					                    </tr>
+					                    <tr>
+					                        <td>fax</td>
+					                        <td><?php echo($transaction->customerDetails->fax)?></td>
+					                    </tr>
+					                </tbody>
+					            </table>
+					        </section>i
+					        <?php endif; ?>
+
+					        <section>
+					            <p class="center small">Integrate with the Braintree SDK for a secure and seamless checkout</p>
+					        </section>
+
+					        <section>
+					            <a class="button secondary full" href="https://developers.braintreepayments.com/guides/drop-in" target="_blank">
+					                <span>See the Docs</span>
+					            </a>
+					        </section>
+					    </article>
+					</aside>
+		        	<!-- Display HTML on Success -->
+			<?php
+
+		    }
+		    else {
+		    	echo "Sorry, ID not found";
+		    }
+		    echo '<pre>Success';
+		    print_r($transaction);
+		    echo '</pre>';
+		} else {
+		    $errorString = "";
+		    foreach($result->errors->deepAll() as $error) {
+		        $errorString .= 'Error: ' . $error->code . ": " . $error->message . "\n";
+		    }
+		    $_SESSION["errors"] = $errorString;
+		    // header("Location: index.php");
+		}
+
+
+	}
+
+	public function insert_transaction_in_db($transaction) {
+		$args = array(
+			'post_type' => 'payment',
+			'comment_status'    =>   	'closed',
+			'ping_status'       =>   	'closed',
+			'post_author'       =>   	1,
+			'post_title'        =>   	$transaction->type . ' - ' . $transaction->id,
+			//'post_content'      =>  	$content,
+			'post_status'       =>   	'publish',
+		  /*other default parameters you want to set*/
+		);
+
+		$post_id = wp_insert_post($args);
+
+
+		if(!is_wp_error($post_id)){
+		  	//the post is valid
+
+		  	// Add transaction details
+			$transaction_id = add_post_meta( $post_id, $meta_key='_transaction_id', $meta_value = $transaction->id, true);
+			$transaction_type = add_post_meta( $post_id, $meta_key='_transaction_type', $meta_value = $transaction->type, true);
+			$transaction_amount = add_post_meta( $post_id, $meta_key='_transaction_amount', $meta_value = $transaction->amount, true);
+			$transaction_currency_iso_code = add_post_meta( $post_id, $meta_key='_transaction_currency_iso_code', $meta_value = $transaction->currencyIsoCode, true);
+			$transaction_status = add_post_meta( $post_id, $meta_key='_transaction_status', $meta_value = $transaction->status, true);
+			$transaction_created_at = add_post_meta( $post_id, $meta_key='_transaction_created_at', $meta_value = $transaction->createdAt, true);
+			$transaction_updated_at = add_post_meta( $post_id, $meta_key='_transaction_updated_at', $meta_value = $transaction->updatedAt, true);
+
+			// Add card details
+			$cardDetails_token = add_post_meta( $post_id, $meta_key='_cardDetails_token', $meta_value = $transaction->creditCardDetails->token, true);
+			$cardDetails_bin = add_post_meta( $post_id, $meta_key='_cardDetails_bin', $meta_value = $transaction->creditCardDetails->bin, true);
+			$cardDetails_last4 = add_post_meta( $post_id, $meta_key='_cardDetails_last4', $meta_value = $transaction->creditCardDetails->last4, true);
+			$cardDetails_cardType = add_post_meta( $post_id, $meta_key='_cardDetails_cardType', $meta_value = $transaction->creditCardDetails->cardType, true);
+			// $cardDetails_expirationDate = add_post_meta( $post_id, $meta_key='_cardDetails_expirationDate', $meta_value = $transaction->creditCardDetails->expirationDate, true);
+			$cardDetails_cardholderName = add_post_meta( $post_id, $meta_key='_cardDetails_cardholderName', $meta_value = $transaction->creditCardDetails->cardholderName, true);
+			$cardDetails_customerLocation = add_post_meta( $post_id, $meta_key='_cardDetails_customerLocation', $meta_value = $transaction->creditCardDetails->customerLocation, true);
+
+		}else{
+		  //there was an error in the post insertion,
+		  echo $post_id->get_error_message();
+		}
 	}
 
 
